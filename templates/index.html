@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <title>Stroke Prediction</title>
+</head>
+
+<body>
+    
+        <div class="container">
+            <form id="predictionForm"action="/predict" method="POST">
+                <div class="mb-3">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select class="form-select" id="gender" name="gender" aria-label="Default select example" required>
+                        <option selected disabled>-- Select gender --</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="age" class="form-label">Enter age</label>
+                    <input type="number" class="form-control" id="age" name="age" placeholder="Age" required>
+                </div>
+                <div class="mb-3">
+                    <label for="hypertension" class="form-label">Hypertension</label>
+                    <select class="form-select" id="hypertension" name="hypertension" aria-label="Default select example"
+                        required>
+                        <option selected disabled>-- Select Hypertension --</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="heart_disease"  class="form-label">Heart Disease</label>
+                    <select class="form-select" id="heart_disease" name="heart_disease" aria-label="Default select example" required>
+                        <option selected>-- select Heart Disease --</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="married"  class="form-label">Marrital status</label>
+                    <select class="form-select" id="married" name="married" aria-label="Default select example" required>
+                        <option selected>--select marrital status --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="work"  class="form-label">work type</label>
+                    <select class="form-select" id="work" name="work" aria-label="Default select example" required>
+                        <option selected>-- select work type --</option>
+                        <option value="Self-employed">Self-employed</option>
+                        <option value="Private">Private</option>
+                        <option value="children">children</option>
+                        <option value="Govt_job">Government Job</option>
+                        
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="residence"  class="form-label">Residence Type</label>
+                    <select class="form-select" id="residence" name="residence" aria-label="Default select example" required>
+                        <option selected>-- Select residence type --</option>
+                        <option value="Urban">Urban</option>
+                        <option value="Rural">Rural</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="avg_glucose_level" class="form-label">Enter average glucose level</label>
+                    <input type="number" class="form-control" id="avg_glucose_level" name="avg_glucose_level" placeholder="Average Glucose level" required>
+                </div>
+                <div class="mb-3">
+                    <label for="bmi" class="form-label">Enter Body Mass Index (BMI)</label>
+                    <input type="number" class="form-control" id="bmi" name="bmi" placeholder="Body Mass Index (BMI)" required>
+                </div>               
+                <div class="mb-3">
+                    <label for="smoking"  class="form-label">Smoking status</label>
+                    <select class="form-select" id="smoking" name="smoking" aria-label="Default select example" required>
+                        <option selected value="Unknown">-- Select smoking status if unknown --</option>
+                        <option value="never smoked">never smoked</option>
+                        <option value="formerly smoked">formerly smoked</option>
+                        <option value="unknown">Unknown</option>
+                        <option value="smokes">smokes</option>
+                    </select>
+                </div>
+                <input type="button" value="Predict" onclick="predict()">
+                <p id="resultMessage"></p>
+                STROKE: {{result_message }} <br>
+                {% if contributions %}
+                     <h3>Feature Contributions:</h3>
+            <ul>
+                {% for feature, contribution in contributions.items() %}
+                <li>{{ feature }}: {{ contribution }}%</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            </form>
+        
+            
+            
+        </div><br><br>
+        <br> <br> <br> <br> </div>
+        <script>
+            function predict() {
+                // Collect form data and convert to JSON
+                var formData = {
+                    "gender": document.getElementById("gender").value,
+                    "age": document.getElementById("age").value,
+                    "hypertension": document.getElementById("hypertension").value,
+                    "heart_disease": document.getElementById("heart_disease").value,
+                    "married": document.getElementById("married").value,
+                    "work": document.getElementById("work").value,
+                    "residence": document.getElementById("residence").value,
+                    "avg_glucose_level": document.getElementById("avg_glucose_level").value,
+                    "bmi": document.getElementById("bmi").value,
+                    "smoking": document.getElementById("smoking").value
+                       };
+
+    
+                // Send a JSON request to the /predict endpoint
+                fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the result message on the page
+                    document.getElementById("resultMessage").innerText = "Stroke Prediction: " + data.result_message;
+
+                    // Update the feature contributions on the page
+                    var contributionsList = "";
+                    for (var feature in data.contributions) {
+                        contributionsList += feature + ": " + data.contributions[feature].toFixed(2) + "%\n";
+                    }
+                    alert("Feature Contributions:\n" + contributionsList);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+            
+        </script>
+    
+             
+    
+</body>
+
+</html>
