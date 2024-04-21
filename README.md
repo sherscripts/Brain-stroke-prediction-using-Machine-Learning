@@ -1,0 +1,1 @@
+This is a flask application which imports the pickle file from the machine learning code written in jupyter . It takes the inputs from the user and does one hot encoding which further passed to the machine learning model and finally the result is predicted.
